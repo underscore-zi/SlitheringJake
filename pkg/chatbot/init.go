@@ -1,22 +1,24 @@
 package chatbot
 
 import (
-	"SlitheringJake/pkg/mctg"
+	"SlitheringJake/pkg/markovchain"
 	"github.com/gempir/go-twitch-irc/v3"
 	"log"
 	"sync"
+	"time"
 )
 
 func NewChatBot(config Config) (*ChatBot, error) {
 	bot := ChatBot{
 		Config:   config,
 		Client:   nil,
-		chains:   map[string]*mctg.MCTG{},
+		chains:   map[string]*markovchain.MarkovChain{},
 		commands: map[string]CommandCallback{},
 		mutexes: map[string]*sync.Mutex{
 			// have to bootstrap this one, everything else should use .newMutex
-			"map_mutexes": &sync.Mutex{},
+			"map_mutexes": {},
 		},
+		lastUse: map[string]time.Time{},
 	}
 
 	bot.newMutex("map_chains")

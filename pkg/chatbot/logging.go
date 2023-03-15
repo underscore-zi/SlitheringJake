@@ -43,19 +43,6 @@ func (bot *ChatBot) logMessage(message twitch.PrivateMessage) {
 		return
 	}
 
-	// TODO: Uniquness check
-
-	// MCTG expects all statements to end with punctuation, since chat often doesn't we have to manually add punctuation
-	// so that MCTG doesn't generate run-on sentences.
-	switch message.Message[len(message.Message)-1] {
-	case '.':
-	case '!':
-	case '?':
-	default:
-		message.Message += "."
-	}
-
-	// TODO: Open the file earlier
 	bot.lock("file_log")
 	defer bot.unlock("file_log")
 
@@ -65,12 +52,14 @@ func (bot *ChatBot) logMessage(message twitch.PrivateMessage) {
 	}
 	defer func() { _ = fp.Close() }()
 
-	_, _ = fp.WriteString(message.Message)
-	_, _ = fp.WriteString("\n")
+	_, err = fp.WriteString(message.Message + "\n")
+	if err != nil {
+		log.Printf("[!] Failed to write to log file: %s", err)
+	}
 
 	chain := bot.GetChain("log")
 	defer bot.PutChain("log")
-	chain.ParseCorpusFromString(message.Message, false)
+	chain.InsertLine(message.Message)
 }
 
 func (bot *ChatBot) privateMessageHandler(message twitch.PrivateMessage) {
@@ -90,19 +79,19 @@ func (bot *ChatBot) privateMessageHandler(message twitch.PrivateMessage) {
 		message.Message = fmt.Sprintf("%sgenerate", bot.Config.CommandPrefix)
 		go bot.dispatchCommand(message)
 	}
-
 }
 
 func (bot *ChatBot) dispatchCommand(message twitch.PrivateMessage) {
 	if !bot.isPotentialCommand(message) {
 		return
 	}
-
 	words := strings.SplitN(message.Message, " ", 2)
 	command := strings.ToLower(words[0][len(bot.Config.CommandPrefix):])
 
 	if handler, found := bot.commands[command]; found {
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer func() { cancel() }()
+
 		if err := handler(ctx, message); err != nil {
 			log.Printf("[%s] error: %s", command, err.Error())
 		}

@@ -1,19 +1,21 @@
 package chatbot
 
 import (
-	"SlitheringJake/pkg/mctg"
+	"SlitheringJake/pkg/markovchain"
 	"context"
 	"github.com/gempir/go-twitch-irc/v3"
 	"sync"
+	"time"
 )
 
 type ChatBot struct {
 	Config       Config
 	Client       *twitch.Client
-	chains       map[string]*mctg.MCTG
+	chains       map[string]*markovchain.MarkovChain
 	commands     map[string]CommandCallback
 	mutexes      map[string]*sync.Mutex
 	messageCount int
+	lastUse      map[string]time.Time
 }
 
 type Config struct {
