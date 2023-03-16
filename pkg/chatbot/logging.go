@@ -46,7 +46,7 @@ func (bot *ChatBot) logMessage(message twitch.PrivateMessage) {
 	bot.lock("file_log")
 	defer bot.unlock("file_log")
 
-	fp, err := os.OpenFile(bot.Config.LogFile, os.O_APPEND, 0755)
+	fp, err := os.OpenFile(bot.Config.LogFile, os.O_APPEND|os.O_WRONLY, 0755)
 	if err != nil {
 		panic(err)
 	}
