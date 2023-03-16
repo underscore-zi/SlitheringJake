@@ -47,13 +47,20 @@ func (m *MarkovChain) random(max int) int {
 	return rand.Intn(max)
 }
 
-// randomStart returns a random starting term
+// randomStart returns a random starting term which has more than one continuation
 func (m *MarkovChain) randomStart() string {
 	starts := m.dictionary[""]
 	if len(starts) == 0 {
 		return ""
 	}
-	return starts[m.random(len(starts))]
+
+	for i := 0; i < 100; i++ {
+		choice := starts[m.random(len(starts))]
+		if len(m.dictionary[choice]) > 1 {
+			return choice
+		}
+	}
+	return ""
 }
 
 // randomContinuation returns a random continuation for a given word
@@ -72,4 +79,14 @@ func (m *MarkovChain) Print() {
 			fmt.Println("\t", xs)
 		}
 	}
+}
+
+func (m *MarkovChain) isUnique(line string) bool {
+	line = m.NormalizeToken(line[:len(line)-1])
+	for _, seq := range m.sequences {
+		if strings.Contains(seq, line) {
+			return false
+		}
+	}
+	return true
 }

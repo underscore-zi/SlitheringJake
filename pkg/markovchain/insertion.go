@@ -21,6 +21,9 @@ func (m *MarkovChain) InsertLine(line string) {
 		line += "."
 	}
 
+	// Probably not the best for memory to hold the entire log in memory but it gives a way to check uniquness
+	m.sequences = append(m.sequences, m.NormalizeToken(line))
+
 	terms := m.splitLine(line)
 	if len(terms) <= m.n {
 		// if the line is too short, just ignore it

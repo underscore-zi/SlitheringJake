@@ -1,27 +1,34 @@
 package markovchain
 
-import "strings"
+import (
+	"strings"
+)
 
-func (m *MarkovChain) generateFrom(start string) (string, float32) {
+func (m *MarkovChain) generateFrom(start string, iterations int) (string, float32) {
+	if iterations > 10 {
+		return "", 0.0
+	}
 	if _, found := m.dictionary[start]; !found {
 		return "", 0.0
 	}
+	originalStart := start
 
 	var builder strings.Builder
 	seen := make(map[string]bool)
 	builder.WriteString(start)
 
-	var attempts, options, parts int
+	var attempts, parts, partsWithChoices int
 
 	for {
 		continuation := m.randomContinuation(start)
 
-		options += len(m.dictionary[start])
 		parts++
+		if len(m.dictionary[start]) > 1 {
+			partsWithChoices++
+		}
 
 		if continuation == "" {
 			break
-			//continuation = m.Generate()
 		}
 
 		// Try to avoid any loops and repetitions
@@ -43,18 +50,29 @@ func (m *MarkovChain) generateFrom(start string) (string, float32) {
 		}
 	}
 
-	trimmed := strings.TrimSpace(builder.String())
-	return trimmed, float32(options) / float32(parts)
+	newLine := strings.TrimSpace(builder.String())
+	if m.isUnique(newLine) {
+		return newLine, float32(partsWithChoices) / float32(parts)
+	} else {
+		return m.generateFrom(originalStart, iterations+1)
+	}
 
 }
 
 // Generate returns a random string and a float representing the average number of options per token
 func (m *MarkovChain) Generate() (string, float32) {
-	start := m.randomStart()
-	if start == "" {
-		return "", 0.0
+	for {
+		start := m.randomStart()
+		if start == "" {
+			return "", 0.0
+		}
+		gen, uniq := m.generateFrom(start, 0)
+		if gen == "" {
+			continue
+		} else {
+			return gen, uniq
+		}
 	}
-	return m.generateFrom(start)
 }
 
 // StartsWith returns a random string but the first token should contain the desired prefix
@@ -70,6 +88,14 @@ func (m *MarkovChain) StartsWith(prefix string) (string, float32) {
 		return "", 0.0
 	}
 
-	start := starters[m.random(len(starters))]
-	return m.generateFrom(start)
+	for i := 0; i < 10; i++ {
+		start := starters[m.random(len(starters))]
+		gen, uniq := m.generateFrom(start, 0)
+		if gen == "" {
+			continue
+		} else {
+			return gen, uniq
+		}
+	}
+	return "", 0.0
 }

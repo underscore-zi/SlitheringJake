@@ -4,6 +4,7 @@ import (
 	"SlitheringJake/pkg/markovchain"
 	"context"
 	"github.com/gempir/go-twitch-irc/v3"
+	"os"
 	"sync"
 	"time"
 )
@@ -16,6 +17,7 @@ type ChatBot struct {
 	mutexes      map[string]*sync.Mutex
 	messageCount int
 	lastUse      map[string]time.Time
+	logfp        *os.File
 }
 
 type Config struct {

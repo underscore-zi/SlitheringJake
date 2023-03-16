@@ -119,8 +119,8 @@ func (bot *ChatBot) questionHandler(ctx context.Context, message twitch.PrivateM
 	prefix := chain.NormalizeToken(streamer)
 
 	for {
-		sentence, uniq := chain.StartsWith(prefix)
-		if sentence[len(sentence)-1] == '?' && uniq > 1.3 {
+		sentence, _ := chain.StartsWith(prefix)
+		if sentence[len(sentence)-1] == '?' {
 			bot.Client.Say(message.Channel, sentence)
 			log.Printf("[*] %s", sentence)
 			return nil

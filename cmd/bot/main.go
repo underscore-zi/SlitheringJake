@@ -6,11 +6,9 @@ import (
 	"flag"
 	"log"
 	"os"
-	"strings"
 )
 
 var bot *chatbot.ChatBot
-var allQuotes []string
 
 func main() {
 	var err error
@@ -45,10 +43,6 @@ func main() {
 		if _, err := os.Stat(quotesfn); err == nil {
 			bot.NewChain("quotes", quotesfn, 2)
 			bot.AddCommand("quote", QuoteCommand)
-			if content, err := os.ReadFile(quotesfn); err == nil {
-				allQuotes = strings.Split(string(content), "\n")
-			}
-
 		} else {
 			log.Printf("Quotes file was provided, but does not exist.")
 			return

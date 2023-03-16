@@ -12,7 +12,7 @@ func init() {
 	terminators = []rune{'.', '!', '?'}
 
 	// alphaNumeric must include the terminators since they are needed to detect end of chains
-	alphaNumeric = regexp.MustCompile("[^a-z0-9.!?]")
+	alphaNumeric = regexp.MustCompile("[^a-z0-9@-_.!?]")
 
 	for _, terminator := range terminators {
 		if terminator > 127 || terminator < 0 {
@@ -23,6 +23,7 @@ func init() {
 
 type MarkovChain struct {
 	dictionary map[string][]string
+	sequences  []string
 	n          int
 }
 
