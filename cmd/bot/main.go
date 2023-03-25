@@ -2,6 +2,7 @@ package main
 
 import (
 	"SlitheringJake/pkg/chatbot"
+	"SlitheringJake/pkg/slitheringjake"
 	"encoding/json"
 	"flag"
 	"log"
@@ -12,10 +13,10 @@ var bot *chatbot.ChatBot
 
 func main() {
 	var err error
-	var config chatbot.Config
-	var configfn, quotesfn string
+	var config slitheringjake.Config
+	var configfn string
+
 	flag.StringVar(&configfn, "config", "", "Path to config file (json)")
-	flag.StringVar(&quotesfn, "quotes", "", "Path to quotes log file (optional)")
 	flag.Parse()
 
 	if configfn == "" {
@@ -33,22 +34,13 @@ func main() {
 		return
 	}
 
-	bot, err = chatbot.NewChatBot(config)
+	jake, err := slitheringjake.NewSlitheringJake(config)
 	if err != nil {
 		log.Printf("Failed to create bot: %s", err.Error())
 		return
 	}
 
-	if quotesfn != "" {
-		if _, err := os.Stat(quotesfn); err == nil {
-			bot.NewChain("quotes", quotesfn, 2)
-			bot.AddCommand("quote", QuoteCommand)
-		} else {
-			log.Printf("Quotes file was provided, but does not exist.")
-			return
-		}
-	}
-	err = bot.Run()
+	err = jake.Bot.Run()
 	if err != nil {
 		panic(err)
 	}

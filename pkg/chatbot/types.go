@@ -4,51 +4,36 @@ import (
 	"SlitheringJake/pkg/markovchain"
 	"context"
 	"github.com/gempir/go-twitch-irc/v3"
-	"os"
 	"sync"
-	"time"
 )
 
 type ChatBot struct {
-	Config       Config
-	Client       *twitch.Client
-	chains       map[string]*markovchain.MarkovChain
-	commands     map[string]CommandCallback
-	mutexes      map[string]*sync.Mutex
-	messageCount int
-	lastUse      map[string]time.Time
-	logfp        *os.File
+	Config   Config
+	Client   *twitch.Client
+	chains   map[string]*markovchain.MarkovChain
+	commands map[string]CommandCallback
+	mutexes  map[string]*sync.Mutex
+}
+
+type TwitchConfig struct {
+	// Username the username to authenticate with on the twitch IRC
+	Username string `json:"username"`
+
+	// Oauth is the oauth token used to authenticate with twitch IRC
+	Oauth string `json:"oauth"`
+
+	// Channels is a list of channels to join
+	Channels []string `json:"channels"`
 }
 
 type Config struct {
-	// LogFile is the filename that the logged messages will be written to and read from for the markov chain
-	LogFile string
 	// CommandPrefix is the string that will prefix all commands. This must be unique from any in Ignore.Prefixes
 	CommandPrefix string
-
 	// Twitch connection settings for twitch
-	Twitch struct {
-		// Username the username to authenticate with on the twitch IRC
-		Username string
-		// Oauth is the oauth token used to authenticate with twitch IRC
-		Oauth string
-		// Channels is a list of channels to join
-		Channels []string
-	}
-
-	Ignore struct {
-		// Accounts should contains all accounts thaat should be ignored like nightbot or co2_bot
-		Accounts []string
-		// Prefixes are any tokens used by _other_ bots to prefix their commands, like `!` and `.`, these can be multicharacter
-		Prefixes []string
-	}
-
-	// MinimumMessageLength for a message to be logged
-	MinimumMessageLength int
-	// MessageInterval is the frequency for which messages will be automatically generated
-	MessageInterval int
-	// StreamerName is used by the -question command to find messages asking the streamer a question
-	StreamerName string
+	Twitch TwitchConfig
+	// AuthCheck is run before a command is dispatched to check if the user is authorized
+	AuthCheck AuthCallback
 }
 
 type CommandCallback func(context context.Context, message twitch.PrivateMessage) error
+type AuthCallback func(command string, user twitch.User, message twitch.PrivateMessage) bool

@@ -2,16 +2,16 @@ package chatbot
 
 import "sync"
 
-func (bot *ChatBot) newMutex(name string) {
-	bot.lock("map_mutexes")
-	defer bot.unlock("map_mutexes")
+func (bot *ChatBot) NewMutex(name string) {
+	bot.Lock("map_mutexes")
+	defer bot.Unlock("map_mutexes")
 
 	bot.mutexes[name] = &sync.Mutex{}
 
 	// TODO: Check for duplicates and actually throw an error here
 }
 
-func (bot *ChatBot) lock(name string) {
+func (bot *ChatBot) Lock(name string) {
 	if m, found := bot.mutexes[name]; found {
 		m.Lock()
 	} else {
@@ -19,7 +19,7 @@ func (bot *ChatBot) lock(name string) {
 	}
 }
 
-func (bot *ChatBot) unlock(name string) {
+func (bot *ChatBot) Unlock(name string) {
 	if m, found := bot.mutexes[name]; found {
 		m.Unlock()
 	} else {
