@@ -16,12 +16,12 @@ func (bot *ChatBot) AddCommand(command string, callback CommandCallback) {
 	bot.commands[command] = callback
 }
 
-func (bot *ChatBot) privateMessageHandler(message twitch.PrivateMessage) {
+func (bot *ChatBot) PrivateMessageHandler(message twitch.PrivateMessage) {
 	go bot.dispatchCommand(message)
 }
 
 func (bot *ChatBot) dispatchCommand(message twitch.PrivateMessage) {
-	if strings.HasPrefix(message.Message, bot.Config.CommandPrefix) {
+	if !strings.HasPrefix(message.Message, bot.Config.CommandPrefix) {
 		return
 	}
 	words := strings.SplitN(message.Message, " ", 2)

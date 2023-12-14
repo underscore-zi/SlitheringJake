@@ -25,7 +25,7 @@ func NewChatBot(config Config) (*ChatBot, error) {
 	bot.Client = twitch.NewClient(config.Twitch.Username, config.Twitch.Oauth)
 	bot.Client.Join(config.Twitch.Channels...)
 
-	bot.Client.OnPrivateMessage(bot.privateMessageHandler)
+	bot.Client.OnPrivateMessage(bot.PrivateMessageHandler)
 	bot.Client.OnConnect(func() {
 		log.Println("Connected to IRC")
 	})

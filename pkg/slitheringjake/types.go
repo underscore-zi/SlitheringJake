@@ -82,7 +82,7 @@ func NewSlitheringJake(config Config) (*SlitheringJake, error) {
 	jake.Bot.AddCommand("contains", jake.ContainsCommand)
 
 	if jake.Config.QuoteFile != "" {
-		jake.Bot.NewChain(quote_chain, jake.Config.QuoteFile, 2)
+		jake.Bot.NewChain(quote_chain, jake.Config.QuoteFile, 1)
 		jake.Bot.AddCommand("quote", jake.QuoteCommand)
 	}
 

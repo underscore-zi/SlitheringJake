@@ -11,6 +11,8 @@ import (
 // NewMessage is a callback for new twitch messages. Command detection should happen in hte chatbot but we can add
 // to the markov chain here.
 func (jake *SlitheringJake) NewMessage(message twitch.PrivateMessage) {
+	jake.Bot.PrivateMessageHandler(message)
+
 	if jake.IsIgnoredAccount(message.User) {
 		return
 	}
