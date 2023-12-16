@@ -58,6 +58,7 @@ func NewSlitheringJake(config Config) (*SlitheringJake, error) {
 	var err error
 
 	jake.Config = config
+	jake.lastUse = map[string]time.Time{}
 
 	botConfig := chatbot.Config{
 		CommandPrefix: jake.Config.CommandPrefix,
