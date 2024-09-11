@@ -14,10 +14,9 @@ Commands are usable by subscribers and above (VIP, Mods, Broadcaster)
 
 ## Usage (Arguments)
 
-`./bot -config <filepath> -quotes <filepath>`
+`./bot -config <filepath>`
 
  - `-config <filepath>` - Path to the configuration file, see [example.config](example.config) for an example. . The options of this JSON file are documented in [source](pkg/chatbot/types.go).
- - `-quotes <filepath>` - This is a logfile for quotes to enable the `quote` command. If you want to use this then the quote file should be a plaintext file, with quotes that'll be used to generate a new chain. Each quote or other message **must** end with a `.`, `!`, or `?`. If this is not present the bot will generate run on sentences as it does not recognize newlines as the end of a statement.
 
 
 
