@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+const MinimumSentenceLength = 6
 const ErrorMessage = "Unable to fulfill."
 
 // AuthCheck is a simple authorization callback, mods and VIPs can always used commands, otherwise its sub only
@@ -34,11 +35,10 @@ func (jake *SlitheringJake) GenerateCommand(ctx context.Context, message twitch.
 	chain := jake.Bot.GetChain(log_chain)
 	defer jake.Bot.PutChain(log_chain)
 
-	minWordCount := 6
 	for {
 		sentence, _ := chain.Generate()
 		wordCount := strings.Count(sentence, " ") + 1
-		if wordCount >= minWordCount {
+		if wordCount >= MinimumSentenceLength {
 			jake.Bot.Client.Say(message.Channel, sentence)
 			log.Printf("[*] %s", sentence)
 			return nil
@@ -81,51 +81,27 @@ func (jake *SlitheringJake) ContainsCommand(ctx context.Context, message twitch.
 		required[i] = chain.NormalizeToken(required[i])
 	}
 
-	// Use the new system IF there is only one word ot match
-	if len(required) == 1 {
-		sentence, _ := chain.Contains(required[0])
-		jake.Bot.Client.Reply(message.Channel, message.ID, sentence)
-		log.Printf("[*] %s", sentence)
-		return nil
-	}
-
 	for {
-		sentence, _ := chain.Generate()
-		words := strings.Split(sentence, " ")
-		for i := 0; i < len(words); i++ {
-			words[i] = chain.NormalizeToken(words[i])
-		}
-		normSentence := strings.Join(words, " ")
+		// We only actually use the first required term
+		sentence, score := chain.Contains(required[0])
 
-		found := true
-		for _, requiredWord := range required {
-			// Try and prevent matching where a requiredWord appears in the middle of another requiredWord,
-			// but still catch minor variations like plural or verb endings
-			startsWith := strings.HasPrefix(normSentence, requiredWord)
-			contains := strings.Contains(normSentence, " "+requiredWord)
-
-			if !startsWith && !contains {
-				found = false
-				break
+		if score > 0.0 {
+			wordCount := strings.Count(sentence, " ") + 1
+			if wordCount >= MinimumSentenceLength {
+				jake.Bot.Client.Reply(message.Channel, message.ID, sentence)
+				log.Printf("[*] %s", sentence)
+				return nil
 			}
-		}
-
-		if found {
-			jake.Bot.Client.Reply(message.Channel, message.ID, sentence)
-			log.Printf("[*] %s", sentence)
-			return nil
 		}
 
 		select {
 		case <-ctx.Done():
-			jake.Bot.Client.Reply(message.Channel, message.ID, ErrorMessage)
 			jake.deleteLastUse(message.User.Name)
 			return ctx.Err()
 		default:
 			continue
 		}
 	}
-
 }
 
 // QuestionCommand will try to generate a question for the streamer
