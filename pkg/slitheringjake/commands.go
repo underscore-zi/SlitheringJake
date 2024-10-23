@@ -81,6 +81,14 @@ func (jake *SlitheringJake) ContainsCommand(ctx context.Context, message twitch.
 		required[i] = chain.NormalizeToken(required[i])
 	}
 
+	// Use the new system IF there is only one word ot match
+	if len(required) == 1 {
+		sentence, _ := chain.Contains(required[0])
+		jake.Bot.Client.Reply(message.Channel, message.ID, sentence)
+		log.Printf("[*] %s", sentence)
+		return nil
+	}
+
 	for {
 		sentence, _ := chain.Generate()
 		words := strings.Split(sentence, " ")

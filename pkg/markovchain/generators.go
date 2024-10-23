@@ -1,6 +1,7 @@
 package markovchain
 
 import (
+	"slices"
 	"strings"
 )
 
@@ -98,4 +99,55 @@ func (m *MarkovChain) StartsWith(prefix string) (string, float32) {
 		}
 	}
 	return "", 0.0
+}
+
+func (m *MarkovChain) Contains(token string) (string, float32) {
+	// First lets check if the dictionary contains the token at all
+	var matches []string
+
+	for key, _ := range m.dictionary {
+		if strings.Contains(key, token) {
+			matches = append(matches, key)
+		}
+	}
+
+	if len(matches) == 0 {
+		return "", 0.0
+	}
+
+	token = matches[m.random(len(matches))]
+
+	prefix := ""
+	lastPrefixToken := token
+	for {
+		lastPrefixToken, _ = m.randomPrefix(lastPrefixToken)
+		if lastPrefixToken == "" {
+			break
+		}
+		prefix = lastPrefixToken + " " + prefix
+	}
+
+	continuation, _ := m.generateFrom(token, 0)
+
+	return prefix + token + " " + continuation, 0.0
+}
+
+func (m *MarkovChain) randomPrefix(token string) (string, bool) {
+	var matches []string
+
+	if _, found := m.dictionary[token]; !found {
+		return "", false
+	}
+
+	for key, entries := range m.dictionary {
+		if slices.Contains(entries, token) {
+			matches = append(matches, key)
+		}
+	}
+
+	if len(matches) == 0 {
+		return "", false
+	}
+
+	return matches[m.random(len(matches))], true
 }
